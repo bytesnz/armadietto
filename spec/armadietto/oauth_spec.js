@@ -6,10 +6,12 @@ const expect = chai.expect;
 
 const Armadietto = require('../../lib/armadietto');
 
+const port = process.env.TEST_PORT || '4567';
+
 chai.use(chaiHttp);
 chai.use(spies);
 
-const req = chai.request('http://localhost:4567');
+const req = chai.request(`http://localhost:${port}`);
 const get = async (path, params) => {
   const ret = await req.get(path)
     .redirects(0)
@@ -38,15 +40,20 @@ const sandbox = chai.spy.sandbox();
 describe('OAuth', async () => {
   before((done) => {
     (async () => {
-      this._server = new Armadietto({ store, http: { port: 4567 } });
-      await this._server.boot();
+      console.log(`PORT:${process.env.TEST_PORT}`);
+      if (!process.env.TEST_PORT) {
+        this._server = new Armadietto({ store, http: { port: 4567 } });
+        await this._server.boot();
+      }
       done();
     })();
   });
 
   after((done) => {
     (async () => {
-      await this._server.stop();
+      if (!process.env.TEST_PORT) {
+        await this._server.stop();
+      }
       done();
     })();
   });
