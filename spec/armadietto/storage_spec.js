@@ -11,7 +11,8 @@ chai.use(chaiHttp);
 chai.use(chaiAsPromised);
 chai.use(spies);
 
-// const req = chai.request('http://localhost:4568');
+const port = process.env.TEST_PORT || '4567';
+
 let store = {
   get (username, path) {
     return { item: null, versionMatch: true };
@@ -36,20 +37,24 @@ const modifiedTimestamp = Date.UTC(2012, 1, 25, 13, 37).toString();
 describe('Storage', () => {
   before((done) => {
     (async () => {
-      this._server = new Armadietto({ store, http: { port: 4567 } });
-      await this._server.boot();
+      if (!process.env.TEST_PORT) {
+        this._server = new Armadietto({ store, http: { port: 4567 } });
+        await this._server.boot();
+      }
       done();
     })();
   });
 
   after((done) => {
     (async () => {
-      await this._server.stop();
+      if (!process.env.TEST_PORT) {
+        await this._server.stop();
+      }
       done();
     })();
   });
 
-  const req = chai.request('http://localhost:4567');
+  const req = chai.request(`http://localhost:${port}`);
   subject('req', () => req.get(get.path));
 
   describe('when the client uses path traversal in the path', () => {

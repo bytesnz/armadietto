@@ -9,7 +9,7 @@ const Armadietto = require('../../lib/armadietto');
 chai.use(chaiHttp);
 chai.use(spies);
 let store = {};
-const port = '4569';
+const port = process.env.TEST_PORT || '4569';
 const host = `http://localhost:${port}`;
 const req = chai.request(host);
 
@@ -24,15 +24,19 @@ const trim = (what) => what.replace(/\s+/gm, ' ').trim();
 describe('WebFinger', () => {
   before((done) => {
     (async () => {
-      this._server = new Armadietto({ store, http: { port: port } });
-      await this._server.boot();
+      if (!process.env.TEST_PORT) {
+        this._server = new Armadietto({ store, http: { port: port } });
+        await this._server.boot();
+      }
       done();
     })();
   });
 
   after((done) => {
     (async () => {
-      await this._server.stop();
+      if (!process.env.TEST_PORT) {
+        await this._server.stop();
+      }
       done();
     })();
   });
